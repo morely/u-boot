@@ -747,7 +747,7 @@ struct phy_device *phy_find_by_mask(struct mii_dev *bus, unsigned phy_mask,
 		bus->reset(bus);
 
 	/* Wait 15ms to make sure the PHY has come out of hard reset */
-	udelay(15000);
+	udelay(150000);//mitch
 	return get_phy_device_by_mask(bus, phy_mask, interface);
 }
 
