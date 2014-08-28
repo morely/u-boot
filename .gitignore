@@ -91,3 +91,8 @@ GPATH
 GRTAGS
 GSYMS
 GTAGS
+
+#custerm files
+/e9
+/xc7z010
+/myd-am335x
