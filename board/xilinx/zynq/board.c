@@ -12,8 +12,9 @@
 #include <zynqpl.h>
 #include <asm/arch/hardware.h>
 #include <asm/arch/sys_proto.h>
-
+#include <asm/io.h>
 DECLARE_GLOBAL_DATA_PTR;
+
 
 #if (defined(CONFIG_FPGA) && !defined(CONFIG_SPL_BUILD)) || \
     (defined(CONFIG_SPL_FPGA_SUPPORT) && defined(CONFIG_SPL_BUILD))
@@ -28,6 +29,37 @@ static xilinx_desc fpga035 = XILINX_XC7Z035_DESC(0x35);
 static xilinx_desc fpga045 = XILINX_XC7Z045_DESC(0x45);
 static xilinx_desc fpga100 = XILINX_XC7Z100_DESC(0x100);
 #endif
+
+#define CONFIG_RESET_I2C_CONTROLLER
+
+#ifdef CONFIG_RESET_I2C_CONTROLLER
+#define SLCR_LOCKSTA		(ZYNQ_SYS_CTRL_BASEADDR + 0x0000000C)
+#define I2C_RST_CTRL		(ZYNQ_SYS_CTRL_BASEADDR + 0x00000224)
+#define is_slcr_lock()		(readl(SLCR_LOCKSTA)&0x1)
+
+/*add function reset_i2c to reset i2c controller*/
+
+static void reset_i2c(void)
+{
+	volatile int i = 0;
+	u32 slcr_locksta;
+
+	slcr_locksta = is_slcr_lock();
+	if (slcr_locksta)
+		zynq_slcr_unlock();
+	
+	writel(0x3,I2C_RST_CTRL);
+	for (i = 0; i < 100; i++);
+	writel(0x0,I2C_RST_CTRL);
+
+
+	if (slcr_locksta)
+	zynq_slcr_lock();
+}
+
+#endif
+
+
 
 int board_init(void)
 {
@@ -74,11 +106,14 @@ int board_init(void)
 	if (eeprom_write(CONFIG_SYS_I2C_MUX_ADDR, 0, &eepromsel, 1))
 		puts("I2C:EEPROM selection failed\n");
 #endif
+
 	return 0;
 }
 
 int board_late_init(void)
 {
+
+
 	switch ((zynq_slcr_get_boot_mode()) & ZYNQ_BM_MASK) {
 	case ZYNQ_BM_QSPI:
 		setenv("modeboot", "qspiboot");
@@ -100,6 +135,9 @@ int board_late_init(void)
 		break;
 	}
 
+#ifdef CONFIG_RESET_I2C_CONTROLLER
+	reset_i2c();//mitch reset i2c controller
+#endif	
 	return 0;
 }
 
