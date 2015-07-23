@@ -21,6 +21,12 @@
 #include <i2c.h>
 #include "board.h"
 
+static struct module_pin_mux gpio3_8_pin_mux[] = {
+	{OFFSET(emu1), (MODE(7) | PULLUDDIS)},	/* GPIO3_8 mitch */
+	{OFFSET(mii1_col), (MODE(7) | PULLUDDIS | RXACTIVE)},	/* GPIO3_8 mitch */
+	{-1},
+};
+
 static struct module_pin_mux uart0_pin_mux[] = {
 	{OFFSET(uart0_rxd), (MODE(0) | PULLUP_EN | RXACTIVE)},	/* UART0_RXD */
 	{OFFSET(uart0_txd), (MODE(0) | PULLUDEN)},		/* UART0_TXD */
@@ -357,6 +363,12 @@ void enable_board_pin_mux(struct am335x_baseboard_id *header)
 			configure_module_pin_mux(mmc1_pin_mux);
 			configure_module_pin_mux(spi0_pin_mux);
 		}
+	} else if (board_is_mcc335x_y(header)) {
+		/* mitch 0722 */
+		configure_module_pin_mux(rgmii1_pin_mux);
+		configure_module_pin_mux(mmc0_pin_mux);
+		configure_module_pin_mux(mmc1_pin_mux);
+		configure_module_pin_mux(gpio3_8_pin_mux);
 	} else if (board_is_idk(header)) {
 		/*
 		 * Industrial Motor Control (IDK)

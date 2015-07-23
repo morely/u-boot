@@ -332,9 +332,9 @@ static void process_boot_delay(void)
 #endif /* CONFIG_BOOTCOUNT_LIMIT */
 
 #ifdef CONFIG_BOOTCOUNT_LIMIT
-	bootcount = bootcount_load();
+//	bootcount = bootcount_load();
 	bootcount++;
-	bootcount_store (bootcount);
+//	bootcount_store (bootcount);
 	setenv_ulong("bootcount", bootcount);
 	bootlimit = getenv_ulong("bootlimit", 10, 0);
 #endif /* CONFIG_BOOTCOUNT_LIMIT */

@@ -38,7 +38,14 @@ DECLARE_GLOBAL_DATA_PTR;
 #define GPIO_DDR_VTT_EN		7
 
 static struct ctrl_dev *cdev = (struct ctrl_dev *)CTRL_DEVICE_BASE;
+#if 1  /*mitch 0722*/
+static int read_eeprom(struct am335x_baseboard_id *header)
+{
+	strncpy(header->name,"mcc335-y",HDR_NAME_LEN);
+	return 0;
+}
 
+#else
 /*
  * Read header information from EEPROM into global structure.
  */
@@ -80,6 +87,7 @@ static int read_eeprom(struct am335x_baseboard_id *header)
 
 	return 0;
 }
+#endif
 
 #if defined(CONFIG_SPL_BUILD) || defined(CONFIG_NOR_BOOT)
 static const struct ddr_data ddr2_data = {
@@ -242,7 +250,7 @@ void am33xx_spl_board_init(void)
 	/* Get the frequency */
 	dpll_mpu_opp100.m = am335x_get_efuse_mpu_max_freq(cdev);
 
-	if (board_is_bone(&header) || board_is_bone_lt(&header)) {
+	if (board_is_bone(&header) || board_is_bone_lt(&header) || board_is_mcc335x_y(&header)) {//mitch 0722
 		/* BeagleBone PMIC Code */
 		int usb_cur_lim;
 
@@ -388,6 +396,8 @@ const struct dpll_params *get_dpll_ddr_params(void)
 		return &dpll_ddr_evm_sk;
 	else if (board_is_bone_lt(&header))
 		return &dpll_ddr_bone_black;
+	else if (board_is_mcc335x_y(&header))//mitch 0722
+		return &dpll_ddr_bone_black;
 	else if (board_is_evm_15_or_later(&header))
 		return &dpll_ddr_evm_sk;
 	else
@@ -478,6 +488,11 @@ void sdram_init(void)
 		config_ddr(303, &ioregs_evmsk, &ddr3_data,
 			   &ddr3_cmd_ctrl_data, &ddr3_emif_reg_data, 0);
 	else if (board_is_bone_lt(&header))
+		config_ddr(400, &ioregs_bonelt,
+			   &ddr3_beagleblack_data,
+			   &ddr3_beagleblack_cmd_ctrl_data,
+			   &ddr3_beagleblack_emif_reg_data, 0);
+	else if (board_is_mcc335x_y(&header))//mitch 0722
 		config_ddr(400, &ioregs_bonelt,
 			   &ddr3_beagleblack_data,
 			   &ddr3_beagleblack_cmd_ctrl_data,
